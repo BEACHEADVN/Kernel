@@ -781,6 +781,10 @@ jobs:
         git add .
         git commit -m "Wild: Clean Dirty Flag"
 
+        echo "--- Checking Final Kernel Configuration ---"
+        # Thay .config bằng đường dẫn file config trong thư mục build của bạn (thường là out/.config)
+        grep -E "CONFIG_KSU_OVERLAYFS|CONFIG_OVERLAY_FS" ${{ env.KERNEL_ROOT }}/out/.config || echo "OverlayFS NOT FOUND!"
+
     - name: Build Kernel
       working-directory: ${{ env.KERNEL_ROOT }}
       run: |
