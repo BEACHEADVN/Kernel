@@ -193,6 +193,9 @@ jobs:
               curl -LSs "https://raw.githubusercontent.com/BEACHEADVN/Wild_KSU/refs/heads/stable/kernel/setup.sh" | bash -s "${{ inputs.ksu_commit }}"
             else
               curl -LSs "https://raw.githubusercontent.com/BEACHEADVN/Wild_KSU/refs/heads/stable/kernel/setup.sh" | bash -s stable
+              echo "Tim apk_sign.c"
+            find . -name apk_sign.c
+            ;;
             fi
             ;;
           Next)
