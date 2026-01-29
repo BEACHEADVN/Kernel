@@ -531,6 +531,19 @@ jobs:
         CONFIG_OVERLAY_FS_XINO_AUTO=y
         CONFIG_OVERLAY_FS_METACOPY=y
 
+        # Ép biến có sẵn trong defconfig nếu nó đã tồn tại
+        sed -i 's/# CONFIG_KSU_OVERLAYFS is not set/CONFIG_KSU_OVERLAYFS=y/' ${{ env.KERNEL_ROOT }}/${{ env.DEFCONFIG }}
+        
+        # Thêm mới các config bắt buộc
+        cat >> ${{ env.KERNEL_ROOT }}/${{ env.DEFCONFIG }} << 'EOF'
+        CONFIG_KSU_OVERLAYFS=y
+        CONFIG_OVERLAY_FS=y
+        CONFIG_OVERLAY_FS_REDIRECT_DIR=y
+        CONFIG_OVERLAY_FS_INDEX=y
+        CONFIG_OVERLAY_FS_XINO_AUTO=y
+        CONFIG_OVERLAY_FS_METACOPY=y
+        EOF
+
         # KPatch Next Support
         CONFIG_KALLSYMS=y
         CONFIG_KALLSYMS_ALL=y
