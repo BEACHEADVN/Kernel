@@ -195,6 +195,7 @@ jobs:
               curl -LSs "https://raw.githubusercontent.com/BEACHEADVN/Wild_KSU/refs/heads/stable/kernel/setup.sh" | bash -s stable
               echo "Tim apk_sign.c"
               find Wild_KSU -name "apk_sign.c"
+              tail -n 4 Wild_KSU/kernel/apk_sign.c
             fi
             ;;
           Next)
