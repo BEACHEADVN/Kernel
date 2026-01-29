@@ -217,6 +217,11 @@ jobs:
             fi
             ;;
         esac
+        - name: Find apk_sign.c
+        working-directory: ${{ env.KERNEL_ROOT }}
+        run: |
+        echo "Searching apk_sign.c..."
+        find . -name apksign.c
        
     - name: Clone & Apply SUSFS Patches for KernelSU Variants
       run: |
