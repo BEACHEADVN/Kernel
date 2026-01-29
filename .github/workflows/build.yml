@@ -187,7 +187,6 @@ jobs:
             else
               curl -LSs "https://raw.githubusercontent.com/BEACHEADVN/Wild_KSU/refs/heads/stable/kernel/setup.sh" | bash -s stable
             fi
-            tail -n 4 /Wild_KSU/kernel/apk_sign.c
             ;;
           Next)
             if [[ -n "${{ inputs.ksu_commit }}" ]]; then
@@ -212,6 +211,12 @@ jobs:
             ;;
         esac
 
+     - name: Find allowlist.c
+       working-directory: ${{ env.KERNEL_ROOT }}
+       run: |
+          echo "Searching apk_sign.c..."
+          find . -name apk_sign.c
+       
     - name: Clone & Apply SUSFS Patches for KernelSU Variants
       run: |
         SUSFS_BRANCH="gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}"
