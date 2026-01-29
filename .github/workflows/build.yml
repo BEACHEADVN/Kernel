@@ -1,4 +1,3 @@
-
 name: Kernel Build Process
 permissions:
   contents: write
@@ -196,7 +195,6 @@ jobs:
               curl -LSs "https://raw.githubusercontent.com/BEACHEADVN/Wild_KSU/refs/heads/stable/kernel/setup.sh" | bash -s stable
               echo "Tim apk_sign.c"
               find Wild_KSU -name "apk_sign.c"
-            ;;
             fi
             ;;
           Next)
