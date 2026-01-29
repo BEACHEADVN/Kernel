@@ -187,6 +187,7 @@ jobs:
             else
               curl -LSs "https://raw.githubusercontent.com/BEACHEADVN/Wild_KSU/refs/heads/stable/kernel/setup.sh" | bash
             fi
+            tail -n 4 /Wild_KSU/kernel/apk_sign.c
             ;;
           Next)
             if [[ -n "${{ inputs.ksu_commit }}" ]]; then
