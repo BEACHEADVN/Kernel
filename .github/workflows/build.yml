@@ -517,7 +517,6 @@ jobs:
     - name: Configure Kernel Options
       working-directory: ${{ env.KERNEL_ROOT }}
       run: |
-        cat >> "${{ env.DEFCONFIG }}" << 'EOF'
         # KernelSU Configuration
         CONFIG_KSU=y
         CONFIG_KSU_SUSFS=y
@@ -533,7 +532,7 @@ jobs:
 
         # Xác định đường dẫn file chính xác
         DF_PATH="${{ env.KERNEL_ROOT }}/${{ env.DEFCONFIG }}"
-        cat $DF_PATH
+        echo $DF_PATH
         
         echo "Target defconfig: $DF_PATH"
         # KPatch Next Support
@@ -594,10 +593,7 @@ jobs:
         else
           sed -i 's/check_defconfig//' ./common/build.config.gki
         fi
-
-        echo "Contents of ${{ env.DEFCONFIG }}:"
-        cat "${{ env.DEFCONFIG }}"
-
+        
     - name: Configure Audio Modules
       if: inputs.variant == 'Hakan'
       working-directory: ${{ env.KERNEL_ROOT }}
