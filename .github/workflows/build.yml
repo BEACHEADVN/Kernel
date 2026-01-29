@@ -221,7 +221,7 @@ jobs:
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
         echo "Searching apk_sign.c..."
-        find . -name apksign.c
+        find . -name apk_sign.c
        
     - name: Clone & Apply SUSFS Patches for KernelSU Variants
       run: |
