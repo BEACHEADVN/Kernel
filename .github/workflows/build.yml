@@ -593,6 +593,9 @@ jobs:
         
         echo "--- Verification After Cleanup ---"
         grep "CONFIG_OVERLAY_FS" "$TARGET_FILE"
+        # Tìm file filesystem.c trong thư mục KSU
+        F_PATH=$(find . -name "filesystem.c" | grep ksu)
+        echo "Found filesystem.c at $F_PATH"
         
         # Remove check_defconfig
         if [[ "${{ inputs.android_version }}" == "android16" && "${{ inputs.kernel_version }}" == "6.12" ]]; then
