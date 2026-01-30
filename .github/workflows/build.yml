@@ -521,7 +521,8 @@ jobs:
         cat >> "${{ env.DEFCONFIG }}" << 'EOF'
         # KernelSU Configuration
         CONFIG_KSU=y
-        CONFIG_KSU_SUSFS=y
+        CONFIG_KSU_SUSFS=n
+        CONFIG_KPROBES=y
 
         # KPatch Next Support
         CONFIG_KALLSYMS=y
@@ -589,7 +590,8 @@ jobs:
         CONFIG_OVERLAY_FS_XINO_AUTO=y
         CONFIG_OVERLAY_FS_METACOPY=y
         EOF
-
+        sed -i '/CONFIG_KSU_SUSFS/d' "$TARGET_FILE"
+        sed -i '/CONFIG_SUSFS/d' "$TARGET_FILE"
         
         echo "--- Verification After Cleanup ---"
         grep "CONFIG_OVERLAY_FS" "$TARGET_FILE"
