@@ -193,9 +193,6 @@ jobs:
               curl -LSs "https://raw.githubusercontent.com/BEACHEADVN/Wild_KSU/refs/heads/stable/kernel/setup.sh" | bash -s "${{ inputs.ksu_commit }}"
             else
               curl -LSs "https://raw.githubusercontent.com/BEACHEADVN/Wild_KSU/refs/heads/stable/kernel/setup.sh" | bash -s stable
-              echo "Tim apk_sign.c"
-              find Wild_KSU -name "apk_sign.c"
-              tail -n 4 Wild_KSU/kernel/apk_sign.c
             fi
             ;;
           Next)
@@ -220,7 +217,7 @@ jobs:
             fi
             ;;
         esac
-       
+
     - name: Clone & Apply SUSFS Patches for KernelSU Variants
       run: |
         SUSFS_BRANCH="gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}"
@@ -470,7 +467,7 @@ jobs:
         sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/selinux/selinux,baseband_guard/ } }' common/security/Kconfig
         
     - name: Apply Module Check Bypass
-      if: ${{ matrix.build_type == 'Bypass' || matrix.build_type == 'Hakan' }}
+      if: ${{ matrix.build_type == 'Bypass' || matrix.build_type == 'Hakan' || matrix.build_type == 'Duchamp' }}
       run: |
         if [[ "${{ inputs.kernel_version }}" == "6.1" || "${{ inputs.kernel_version }}" == "6.6" || "${{ inputs.kernel_version }}" == "6.12" ]]; then
           TARGET_FILE="$KERNEL_ROOT/common/kernel/module/version.c"
@@ -517,20 +514,18 @@ jobs:
     - name: Configure Kernel Options
       working-directory: ${{ env.KERNEL_ROOT }}
       run: |
-        # KernelSU Configuration
         cat >> "${{ env.DEFCONFIG }}" << 'EOF'
         # KernelSU Configuration
         CONFIG_KSU=y
-        CONFIG_KSU_SUSFS=n
-        CONFIG_KPROBES=y
+        CONFIG_KSU_SUSFS=y
 
         # KPatch Next Support
         CONFIG_KALLSYMS=y
         CONFIG_KALLSYMS_ALL=y
 
         # Mountify Support
-        CONFIG_TMPFS_XATTR=n
-        CONFIG_TMPFS_POSIX_ACL=n
+        CONFIG_TMPFS_XATTR=y
+        CONFIG_TMPFS_POSIX_ACL=y
         
         # Networking Configuration
         CONFIG_IP_NF_TARGET_TTL=y
@@ -567,44 +562,6 @@ jobs:
         
         EOF
 
-        TARGET_FILE="${{ env.DEFCONFIG }}"
-        
-        echo "Cleaning up old configs in: $TARGET_FILE"
-
-        # Tìm và xóa toàn bộ các dòng bắt đầu bằng CONFIG_KSU_OVERLAYFS hoặc CONFIG_OVERLAY_FS
-        # Kể cả các dòng đang bị comment (# CONFIG_...) cũng sẽ bị xóa sạch
-        sed -i '/CONFIG_KSU_OVERLAYFS/d' "$TARGET_FILE"
-        sed -i '/CONFIG_OVERLAY_FS/d' "$TARGET_FILE"
-        sed -i '/CONFIG_OVERLAY_FS_REDIRECT_DIR/d' "$TARGET_FILE"
-        sed -i '/CONFIG_OVERLAY_FS_INDEX/d' "$TARGET_FILE"
-        sed -i '/CONFIG_OVERLAY_FS_XINO_AUTO/d' "$TARGET_FILE"
-        sed -i '/CONFIG_OVERLAY_FS_METACOPY/d' "$TARGET_FILE"
-
-        # Ghi cấu hình mới vào cuối file
-        cat >> "$TARGET_FILE" << 'EOF'
-        # KernelSU OverlayFS Enabled
-        CONFIG_KSU_OVERLAYFS=y
-        CONFIG_OVERLAY_FS=y
-        CONFIG_OVERLAY_FS_REDIRECT_DIR=y
-        CONFIG_OVERLAY_FS_INDEX=y
-        CONFIG_OVERLAY_FS_XINO_AUTO=y
-        CONFIG_OVERLAY_FS_METACOPY=y
-        EOF
-        sed -i '/CONFIG_KSU_SUSFS/d' "$TARGET_FILE"
-        sed -i '/CONFIG_SUSFS/d' "$TARGET_FILE"
-        sed -i '/SUSFS/d' "$TARGET_FILE"
-        
-        echo "--- Verification After Cleanup ---"
-        grep "CONFIG_OVERLAY_FS" "$TARGET_FILE"
-        # Tìm file Makefile trong thư mục KSU
-        F_PATH=$(find . -name "Makefile")
-        if [ -f "$F_PATH" ]
-        then
-        echo "Found Makefile at $F_PATH"
-        else
-        echo "not Found Makefile"
-        fi
-        
         # Remove check_defconfig
         if [[ "${{ inputs.android_version }}" == "android16" && "${{ inputs.kernel_version }}" == "6.12" ]]; then
           sed -i '/name = "kernel_aarch64",/a\    check_defconfig = "disabled",' common/BUILD.bazel
@@ -612,7 +569,10 @@ jobs:
         else
           sed -i 's/check_defconfig//' ./common/build.config.gki
         fi
-        
+
+        echo "Contents of ${{ env.DEFCONFIG }}:"
+        cat "${{ env.DEFCONFIG }}"
+
     - name: Configure Audio Modules
       if: inputs.variant == 'Hakan'
       working-directory: ${{ env.KERNEL_ROOT }}
@@ -785,10 +745,6 @@ jobs:
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git add .
         git commit -m "Wild: Clean Dirty Flag"
-
-        echo "--- Checking Final Kernel Configuration ---"
-        # Thay .config bằng đường dẫn file config trong thư mục build của bạn (thường là out/.config)
-        grep -E "CONFIG_KSU_OVERLAYFS|CONFIG_OVERLAY_FS" ${{ env.KERNEL_ROOT }}/out/.config || echo "OverlayFS NOT FOUND!"
 
     - name: Build Kernel
       working-directory: ${{ env.KERNEL_ROOT }}
