@@ -592,16 +592,17 @@ jobs:
         EOF
         sed -i '/CONFIG_KSU_SUSFS/d' "$TARGET_FILE"
         sed -i '/CONFIG_SUSFS/d' "$TARGET_FILE"
+        sed -i '/SUSFS/d' "$TARGET_FILE"
         
         echo "--- Verification After Cleanup ---"
         grep "CONFIG_OVERLAY_FS" "$TARGET_FILE"
-        # Tìm file filesystem.c trong thư mục KSU
-        F_PATH=$(find . -name "filesystem.c")
+        # Tìm file Makefile trong thư mục KSU
+        F_PATH=$(find . -name "Makefile")
         if [ -f "$F_PATH" ]
         then
-        echo "Found filesystem.c at $F_PATH"
+        echo "Found Makefile at $F_PATH"
         else
-        echo "not Found filesystem.c"
+        echo "not Found Makefile"
         fi
         
         # Remove check_defconfig
