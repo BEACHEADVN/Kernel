@@ -528,8 +528,8 @@ jobs:
         CONFIG_KALLSYMS_ALL=y
 
         # Mountify Support
-        CONFIG_TMPFS_XATTR=y
-        CONFIG_TMPFS_POSIX_ACL=y
+        CONFIG_TMPFS_XATTR=n
+        CONFIG_TMPFS_POSIX_ACL=n
         
         # Networking Configuration
         CONFIG_IP_NF_TARGET_TTL=y
