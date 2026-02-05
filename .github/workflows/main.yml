@@ -160,19 +160,35 @@ jobs:
       id: tag
       if: inputs.release_type != 'Actions'
       run: |
-        LATEST_TAG=$(gh api repos/${{ github.repository }}/tags --jq '.[0].name' 2>/dev/null || echo "")
-        if [[ "$LATEST_TAG" =~ ^(.*)-r([0-9]+)$ ]]; then
-          VERSION="${BASH_REMATCH[1]}"
-          REV="${BASH_REMATCH[2]}"
+        set -e
+    
+        # ===== CONFIG =====
+        SUSFS_VERSION="2.0.0"
+        KSU_VARIANT="${{ inputs.ksu_variant }}"
+        PREFIX="${KSU_VARIANT}-susfs${SUSFS_VERSION}"
+    
+        echo "Tag prefix: $PREFIX"
+    
+        # Lấy release gần nhất match prefix
+        LATEST_TAG=$(gh release list --limit 50 --json tagName -q \
+          "[.[] | select(.tagName | startswith(\"${PREFIX}-r\"))][0].tagName" || echo "")
+    
+        echo "Latest matching tag: $LATEST_TAG"
+    
+        if [[ "$LATEST_TAG" =~ ^${PREFIX}-r([0-9]+)$ ]]; then
+          REV="${BASH_REMATCH[1]}"
           NEW_REV=$((REV + 1))
-          NEW_TAG="${VERSION}-r${NEW_REV}"
         else
-          NEW_TAG="${LATEST_TAG}-r1"
+          NEW_REV=1
         fi
-        
+    
+        NEW_TAG="${PREFIX}-r${NEW_REV}"
+    
         echo "New tag: $NEW_TAG"
-        echo "NEW_TAG=${NEW_TAG}" >> $GITHUB_ENV
-        echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+    
+        echo "NEW_TAG=$NEW_TAG" >> "$GITHUB_ENV"
+        echo "new_tag=$NEW_TAG" >> "$GITHUB_OUTPUT"
+
 
     - name: Set release body
       run: |
