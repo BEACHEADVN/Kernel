@@ -242,20 +242,6 @@ jobs:
         !!THIS RELEASE IS A TESTING RELEASE!!
         EOF
 
-    - name: Create GitHub Release
-      run: |
-        PRERELEASE_FLAG=""
-        if [ "${{ inputs.release_type }}" == "Pre-Release" ]; then
-          PRERELEASE_FLAG="--prerelease"
-        fi
-
-        echo "Creating release ${{ env.NEW_TAG }}..."
-        gh release create "${{ env.NEW_TAG }}" \
-          --title "${{ env.RELEASE_NAME }}" \
-          --notes-file release_body.md \
-          --target "${{ github.sha }}" \
-          $PRERELEASE_FLAG
-
     - name: Download Artifacts
       uses: actions/download-artifact@v5
       with:
@@ -317,17 +303,39 @@ jobs:
         pattern: 6.1.145-android14-2025-09-Normal-AnyKernel3
       continue-on-error: true
 
-    - name: Upload Release Assets
-      run: |+
-        shopt -s nullglob
-        mapfile -t anykernel_dirs < <(find ./downloaded-artifacts -maxdepth 2 -type d -name '*-AnyKernel3' -print)
+      - name: Create GitHub Release and Upload Kernels
+  run: |
+    set -e
+    PRERELEASE_FLAG=""
+    if [ "${{ inputs.release_type }}" == "Pre-Release" ]; then
+      PRERELEASE_FLAG="--prerelease"
+    fi
 
-        for dir in "${anykernel_dirs[@]}"; do
-          artifact_name=$(basename "$dir")
-          echo "Creating ZIP for $artifact_name..."
-          (cd "$dir" && zip -r -q -9 "$GITHUB_WORKSPACE/${artifact_name}.zip" ./*) &
-        done
-        wait
+    shopt -s nullglob
+    mapfile -t anykernel_dirs < <(find ./downloaded-artifacts -maxdepth 2 -type d -name '*-AnyKernel3')
+
+    if [ ${#anykernel_dirs[@]} -eq 0 ]; then
+      echo "❌ No AnyKernel3 artifacts found"
+      exit 1
+    fi
+
+    ASSETS=()
+
+    for dir in "${anykernel_dirs[@]}"; do
+      name=$(basename "$dir")
+      zip_path="$GITHUB_WORKSPACE/${name}.zip"
+      echo "Zipping $name..."
+      (cd "$dir" && zip -r -q -9 "$zip_path" .)
+      ASSETS+=("$zip_path")
+    done
+
+    echo "Creating release $NEW_TAG with assets..."
+    gh release create "$NEW_TAG" \
+      "${ASSETS[@]}" \
+      --title "$RELEASE_NAME" \
+      --notes-file release_body.md \
+      --target "${{ github.sha }}" \
+      $PRERELEASE_FLAG
 
     - name: Send Telegram Notification
       if: inputs.release_type == 'Actions' && false
