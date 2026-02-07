@@ -149,6 +149,10 @@ jobs:
             --target "${{ github.sha }}" \
             $PRERELEASE_FLAG
 
+      - name: Debug artifacts
+        run: |
+          ls -R downloaded-artifacts || true
+
       - name: Download AnyKernel3 Artifacts
         uses: actions/download-artifact@v5
         with:
